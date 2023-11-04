@@ -1,0 +1,166 @@
+import libsvm.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+
+public class SVMApp {
+    public static void main(String[] args) {
+        // Đọc dữ liệu đào tạo từ tệp
+        svm_problem trainProblem = readProblem("C:\\Users\\NTTHien\\Downloads\\dulieu.txt");
+
+        // Thiết lập tham số cho mô hình SVM
+        svm_parameter param = new svm_parameter();
+        param.svm_type = svm_parameter.C_SVC;
+        param.kernel_type = svm_parameter.RBF;
+        param.C = 1;
+
+        // Huấn luyện mô hình SVM
+        svm_model model = svm.svm_train(trainProblem, param);
+
+        // Đọc dữ liệu kiểm tra từ tệp
+        svm_problem testProblem = readProblem("C:\\Users\\NTTHien\\Downloads\\test.txt");
+
+        // Lặp qua tất cả các mẫu kiểm tra và dự đoán
+        for (int i = 0; i < testProblem.l; i++) {
+            svm_node[] testNode = testProblem.x[i];
+            double predictedLabel = svm.svm_predict(model, testNode);
+            System.out.println("Predicted label for sample " + i + ": " + predictedLabel);
+        }
+    }
+
+    public static svm_problem readProblem(String filePath) {
+        svm_problem problem = new svm_problem();
+        problem.l = 0; // Số lượng mẫu
+        problem.x = null; // Khởi tạo problem.x là null ban đầu
+        problem.y = null; // Khởi tạo problem.y là null ban đầu
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                problem.l++; // Tăng số lượng mẫu
+
+                // Tách dòng thành các thành phần (ví dụ: dùng khoảng trắng hoặc dấu phẩy)
+                String[] parts = line.split(" ");
+
+                // Số lượng đặc trưng
+                int numFeatures = parts.length - 1;
+
+                // Khởi tạo mảng svm_node cho một mẫu
+                svm_node[] sample = new svm_node[numFeatures];
+
+                // Xử lý các đặc trưng (bỏ qua phần tử đầu là nhãn)
+                for (int i = 1; i < parts.length; i++) {
+                    String[] featureInfo = parts[i].split(":");
+                    int index = Integer.parseInt(featureInfo[0]);
+                    double value = Double.parseDouble(featureInfo[1]);
+
+                    svm_node node = new svm_node();
+                    node.index = index;
+                    node.value = value;
+                    sample[i - 1] = node; // Đặc trưng i - 1
+                }
+
+                // Khởi tạo problem.x và problem.y nếu chưa được khởi tạo
+                if (problem.x == null) {
+                    problem.x = new svm_node[problem.l][];
+                    problem.y = new double[problem.l];
+                }
+
+                // Thêm mẫu vào problem.x
+                problem.x[problem.l - 1] = sample;
+
+                // Nhãn của mẫu
+                double label = Double.parseDouble(parts[0]);
+                problem.y[problem.l - 1] = label;
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return problem;
+    }
+
+}
+
+
+
+/*
+import weka.classifiers.Classifier;
+import weka.classifiers.functions.SMO;
+import weka.core.Instances;
+import weka.core.Instance;
+import weka.core.converters.ArffLoader;
+import weka.filters.unsupervised.attribute.Remove;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+
+public class SVMApp extends JFrame {
+    private JButton classifyButton;
+    private JTextArea resultArea;
+    private JFileChooser fileChooser;
+
+    public SVMApp() {
+        setTitle("SVM Classification App");
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        classifyButton = new JButton("Classify");
+        resultArea = new JTextArea();
+        fileChooser = new JFileChooser();
+
+        panel.add(classifyButton, BorderLayout.NORTH);
+        panel.add(new JScrollPane(resultArea), BorderLayout.CENTER);
+
+        classifyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                classifyData();
+            }
+        });
+
+        add(panel);
+    }
+
+    private void classifyData() {
+        try {
+            fileChooser.showOpenDialog(this);
+            File file = fileChooser.getSelectedFile();
+            if (file != null) {
+                // Load the ARFF file
+            	try {
+            	    // Load the ARFF file
+            	    ArffLoader loader = new ArffLoader();
+            	    loader.setFile(new File("path/to/your/data.arff"));
+            	    Instances data = loader.getDataSet();
+
+            	    // Set the class index (if needed)
+            	    data.setClassIndex(data.numAttributes() - 1);
+            	} catch (Exception e) {
+            	    e.printStackTrace();
+            	}
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new SVMApp().setVisible(true);
+            }
+        });
+    }
+}
+*/
