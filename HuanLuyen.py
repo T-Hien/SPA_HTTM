@@ -3,22 +3,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
-import pyodbc
 import time
 import joblib
 
 
 start_time = time.time()
-
-server = 'DESKTOP-6BMLQQ6\SQLSERVER'
-database = 'BARBERSHOP12'
-username = 'SA'
-password = '352636'
-
-connection_string = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
-
-conn = pyodbc.connect(connection_string)
-cursor = conn.cursor()
 
 df = pd.read_csv('Du_lieu_huan_luyen2.txt')
 print(df)
